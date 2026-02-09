@@ -1,0 +1,7 @@
+{
+  "name": "여기어때 투어 AI",
+  "description": "AI가 실시간 지도를 분석하여 당신에게 딱 맞는 맞춤형 여행 명소를 추천해주는 스마트 투어 가이드입니다.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
