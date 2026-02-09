@@ -4,8 +4,10 @@ import { KTOPlace } from '../types';
 const BASE_URL = 'https://apis.data.go.kr/B551011/KorService2';
 
 async function ktoFetch(endpoint: string, params: Record<string, string>) {
-  const envKey = (process.env.KTO_API_KEY || '').trim();
-  const fallbackKey = (process.env.API_KEY || '').trim();
+  // process 객체 존재 여부 체크 (Vercel 등 환경 대응)
+  const env = typeof process !== 'undefined' ? process.env : {};
+  const envKey = (env.KTO_API_KEY || '').trim();
+  const fallbackKey = (env.API_KEY || '').trim();
   const activeKey = envKey || fallbackKey;
 
   if (!activeKey) {
@@ -33,30 +35,26 @@ async function ktoFetch(endpoint: string, params: Record<string, string>) {
 
     if (!response.ok) {
       if (response.status === 401) {
-        throw new Error("인증 실패: 발급받으신 서비스키가 활성화되지 않았거나 유효하지 않습니다.");
+        throw new Error("인증 실패: 서비스키가 유효하지 않습니다.");
       }
       throw new Error(`서버 오류: ${response.status}`);
     }
 
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-      const text = await response.text();
-      if (text.includes("SERVICE_KEY_IS_NOT_REGISTERED_ERROR")) {
-        throw new Error("등록되지 않은 서비스키입니다. 공공데이터포털 승인 상태를 확인하세요.");
-      }
-      throw new Error("API 응답 형식 오류 (인증 문제 가능성)");
-    }
-
     const data = await response.json();
-    const resultCode = data.response?.header?.resultCode;
-
-    if (resultCode !== '0000') {
-      const resultMsg = data.response?.header?.resultMsg || '알 수 없는 에러';
-      throw new Error(`KTO API 에러: ${resultMsg}`);
+    
+    // KTO API의 특이한 구조 처리: 데이터가 없을 때 items가 빈 문자열("")로 올 수 있음
+    const itemsContainer = data.response?.body?.items;
+    if (!itemsContainer || itemsContainer === "") {
+      return [];
     }
     
-    return data.response.body.items?.item || [];
+    const items = itemsContainer.item;
+    if (!items) return [];
+
+    // 결과가 1개면 객체로, 여러 개면 배열로 오는 특성 대응
+    return Array.isArray(items) ? items : [items];
   } catch (error: any) {
+    console.error("KTO API Fetch Error:", error);
     throw error;
   }
 }
@@ -91,6 +89,6 @@ export const getPlaceDetail = async (contentId: string): Promise<string> => {
     });
     return items[0]?.overview || '상세 정보가 없습니다.';
   } catch (e) {
-    return '상세 정보를 불러오는 중 인증 문제가 발생했습니다.';
+    return '상세 정보를 불러오는 중 문제가 발생했습니다.';
   }
 }

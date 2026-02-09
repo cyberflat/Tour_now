@@ -15,7 +15,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ recommendation: rec, rank }) => {
 
   return (
     <div className="bg-white rounded-[2rem] overflow-hidden border border-white shadow-lg card-hover flex flex-col md:flex-row">
-      <div className="md:w-72 h-56 md:h-auto overflow-hidden bg-slate-100 relative">
+      <div className="md:w-72 h-56 md:h-auto overflow-hidden bg-slate-100 relative shrink-0">
         {rec.firstimage ? (
           <img src={rec.firstimage} alt={rec.title} className="w-full h-full object-cover" />
         ) : (
@@ -34,7 +34,7 @@ const PlaceCard: React.FC<PlaceCardProps> = ({ recommendation: rec, rank }) => {
               href={getNaverMapLink(rec.title, rec.addr1)}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#03C75A] text-white rounded-xl text-sm font-bold hover:brightness-95 transition-all shadow-md"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#03C75A] text-white rounded-xl text-sm font-bold hover:brightness-95 transition-all shadow-md shrink-0"
             >
               <i className="fa-solid fa-location-dot"></i>
               네이버 지도

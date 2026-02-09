@@ -2,15 +2,18 @@
 import { GoogleGenAI } from "@google/genai";
 import { CompanionType } from "../types";
 
-// Always use the API key directly from process.env.API_KEY and use named parameters for initialization.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 export const generateRecommendationReason = async (
   placeName: string,
   overview: string,
   companion: CompanionType
 ): Promise<string> => {
-  // Use gemini-3-flash-preview for basic text tasks as recommended.
+  // process.env 접근 시 발생할 수 있는 ReferenceError 방지를 위해 호출 시점에 초기화
+  const apiKey = process.env.API_KEY;
+  if (!apiKey) {
+    return "AI 추천 이유를 생성하려면 API_KEY 설정이 필요합니다.";
+  }
+
+  const ai = new GoogleGenAI({ apiKey });
   const model = 'gemini-3-flash-preview';
   
   const prompt = `
@@ -23,13 +26,11 @@ export const generateRecommendationReason = async (
   `;
 
   try {
-    // Correct usage of generateContent passing model and contents directly.
     const response = await ai.models.generateContent({
       model: model,
       contents: prompt,
     });
 
-    // Extract text output using the .text property (not a method call).
     return response.text || "이 장소의 매력을 직접 방문하여 느껴보세요!";
   } catch (error) {
     console.error("Gemini AI Reason Generation Error:", error);
